@@ -1,11 +1,13 @@
 namespace SpriteKind {
     export const coin = SpriteKind.create()
 }
+// function foodfun will be called as scores of both players add up to or more than 10
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     while (info.player1.score() + info.player2.score() >= 10) {
         Foodfun(life)
     }
 })
+// if one of the players finish at the treasure with more than 5 point scores and lives, they win. 
 scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.chestClosed, function (sprite, location) {
     if (info.player1.score() >= 5 && info.player1.life() >= 5 && sprite == player1) {
         game.setGameOverMessage(true, "Player 1 Wins")
@@ -16,6 +18,7 @@ scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.chestClosed, function (sp
         game.gameOver(true)
     }
 })
+// if player overlaps with the obstacles, then they lose a life
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
     if (sprite == player2) {
         info.player2.changeLifeBy(-1)
@@ -23,8 +26,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, ot
     if (sprite == player1) {
         info.player1.changeLifeBy(-1)
     }
+    // obstacle destroyed after player overlaps with it
     sprites.destroy(otherSprite)
 })
+// if the player overlaps with coins, their score go up by 1 
 sprites.onOverlap(SpriteKind.Player, SpriteKind.coin, function (sprite, otherSprite) {
     if (sprite == player2) {
         info.player2.changeScoreBy(1)
@@ -32,32 +37,39 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.coin, function (sprite, otherSpr
     if (sprite == player1) {
         info.player1.changeScoreBy(1)
     }
+    // coin destroyed after player overlaps with it
     sprites.destroy(otherSprite)
 })
+// coins are placed at random spots in the pathway
 function CoinFun (list: Image[]) {
     randomCoin = sprites.create(list._pickRandom(), SpriteKind.coin)
     tiles.placeOnRandomTile(randomObstacle, sprites.dungeon.darkGroundNorthWest1)
     randomCoin.setFlag(SpriteFlag.BounceOnWall, true)
     randomCoin.setVelocity(30, 10)
 }
+// used for player's life input in the beginning.
+// if the number inputed is less than 4 and not equal to 0, then the number will be returned
 function lifeFun (num: number) {
     if (num < 4 && !(Num == 0)) {
         return num
     }
     return 1
 }
+// random obstacles are placed in the pathways 
 function EnemyFun (list: Image[]) {
     randomObstacle = sprites.create(list._pickRandom(), SpriteKind.Projectile)
     tiles.placeOnRandomTile(randomObstacle, sprites.dungeon.darkGroundNorthWest1)
     randomObstacle.setFlag(SpriteFlag.BounceOnWall, true)
     randomObstacle.setVelocity(30, 10)
 }
+// food is randomly placed in the pathway
 function Foodfun (list: Image[]) {
     randomFood = sprites.create(list._pickRandom(), SpriteKind.Food)
     tiles.placeOnRandomTile(randomFood, sprites.dungeon.darkGroundNorthWest1)
     randomFood.setBounceOnWall(true)
     randomFood.setVelocity(30, 10)
 }
+// if the player overlaps with the food, the they get + 1 life
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
     if (sprite == player2) {
         info.player2.changeLifeBy(1)
@@ -65,6 +77,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSpr
     if (sprite == player1) {
         info.player1.changeLifeBy(1)
     }
+    // food destroyed after player overlaps with it
     sprites.destroy(otherSprite)
 })
 let randomFood: Sprite = null
@@ -132,11 +145,12 @@ player2.setStayInScreen(false)
 tiles.setCurrentTilemap(tilemap`level1`)
 // player starts on the top corners of the map 
 tiles.placeOnTile(player1, tiles.getTileLocation(1, 1))
-tiles.placeOnTile(player2, tiles.getTileLocation(28, 1))
-controller.moveSprite(player1)
 // player starts on the top corners of the map 
+tiles.placeOnTile(player2, tiles.getTileLocation(28, 1))
+// move player with buttons
+controller.moveSprite(player1)
 controller.moveSprite(player2)
-// list
+// list used for CoinFun function 
 let coin_array = [img`
     . . b b b b . . 
     . b 5 5 5 5 b . 
@@ -215,6 +229,7 @@ life = [img`
     . e e b b 4 4 4 4 4 4 4 4 e e . 
     . . . c c c c c e e e e e . . . 
     `]
+// list used for EnemyFun function, also used as a projectile
 let obstacle = [img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
@@ -250,21 +265,26 @@ let obstacle = [img`
     . . . . c b b a a 6 b c . . . . 
     . . . . . . b 6 6 c c . . . . . 
     `]
+// on game update, function EnemyFun is called with obstacle list
 game.onUpdateInterval(2000, function () {
     EnemyFun(obstacle)
 })
+// on game update, function Foodfun is called with life list
 game.onUpdateInterval(2000, function () {
     Foodfun(life)
 })
+// on game update, function CoinFun is called with coin array list
 game.onUpdateInterval(2000, function () {
     CoinFun(coin_array)
 })
+// if player 1 runs out of life, player 2 wins
 game.onUpdateInterval(500, function () {
     while (info.player1.life() == 0) {
         game.setGameOverMessage(true, "Player 2 Wins")
         game.gameOver(true)
     }
 })
+// if player 2 runs out of life, player 1 wins
 game.onUpdateInterval(500, function () {
     while (info.player2.life() == 0) {
         game.setGameOverMessage(true, "Player 1 Wins")
